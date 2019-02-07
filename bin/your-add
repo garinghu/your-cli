@@ -1,0 +1,29 @@
+#!/usr/bin/env node
+
+const inquirer = require('inquirer');
+const fs = require('fs');
+const path = require('path');
+const home = require('user-home');
+require('shelljs/global');
+
+const promptList = [{
+    type: 'input',
+    message: 'Your Repository Adress:',
+    name: 'address',
+},{
+    type: 'input',
+    message: 'The Alias:',
+    name: 'alias',
+}];
+inquirer.prompt(promptList).then(answers => {
+    const { address, alias } = answers;
+    fs.stat(path.resolve(home, 'garingtest'), (err, stats) => {
+        if(err) {
+            cd(path.resolve(home));
+            mkdir('garingtest');
+        } else {
+            cd(path.resolve(home, 'garingtest'));
+            exec(`git clone ${address} ${alias}`);
+        }
+    })
+})

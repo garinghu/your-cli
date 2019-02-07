@@ -1,0 +1,36 @@
+#!/usr/bin/env node
+
+const inquirer = require('inquirer');
+const fs = require('fs');
+const path = require('path');
+const home = require('user-home');
+require('shelljs/global');
+
+function getFolderNamesInGaringTest () {
+    let components = []
+    const files = fs.readdirSync(path.resolve(home, 'garingtest'))
+    files.forEach(function (item, index) {
+        components.push(item)
+    })
+
+    return components;
+}
+
+const promptList = [{
+    type: 'list',
+    message: 'Check A Repository:',
+    name: 'repository',
+    choices: getFolderNamesInGaringTest()
+}];
+
+inquirer.prompt(promptList).then(answers => {
+    const { repository } = answers;
+    console.log(answers);
+    fs.stat(path.resolve(home, 'garingtest', repository), (err, stats) => {
+        if(err) {
+            console.log('the folder is not existent');
+        } else {
+            cp('-R', path.resolve(home, 'garingtest', repository), path.resolve(__dirname))
+        }
+    })
+})
