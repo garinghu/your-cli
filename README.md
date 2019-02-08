@@ -19,7 +19,7 @@ sudo npm install your-cli -g
 your-add
 
 ```
-这时会提示输入远程模版库的地址和别名（再次加载时会通过别名选择）
+这时会提示输入远程模版库的地址和别名（再次加载时会通过别名选择），然后会判断模版库中是否有package.json文件，如果包含，则进行模版化改造（暂时支持最基础的定制name，version，description）。
 
 ### init
 
@@ -27,8 +27,8 @@ your-add
 your-init
 
 ```
-会提示选择已经注册的模版库别名，选择后就会出现在当前文件夹
+会提示选择已经注册的模版库别名，选择后就会出现在当前文件夹，然后输入项目名称、版本和描述。
 
 
 ## 备注
-一时兴起写着玩的，注册和init的功能没有做任何输入判断，这几天会逐渐迭代完善
+引入了metalsmith结合handlebars进行模版改造，暂时支持定制name，version，description。

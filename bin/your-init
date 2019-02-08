@@ -4,6 +4,7 @@ const inquirer = require('inquirer');
 const fs = require('fs');
 const path = require('path');
 const home = require('user-home');
+const generator = require('../lib/generator');
 require('shelljs/global');
 
 function getFolderNamesInGaringTest () {
@@ -25,12 +26,32 @@ const promptList = [{
 
 inquirer.prompt(promptList).then(answers => {
     const { repository } = answers;
-    console.log(answers);
-    fs.stat(path.resolve(home, 'garingtest', repository), (err, stats) => {
-        if(err) {
-            console.log('the folder is not existent');
-        } else {
-            cp('-R', path.resolve(home, 'garingtest', repository), path.resolve(__dirname))
-        }
-    })
+    new Promise((resolve, reject) => {
+        fs.stat(path.resolve(home, 'garingtest', repository), (err, stats) => {
+            if(err) {
+                reject(err)
+            } else {
+                resolve(repository)
+            }
+        })
+    }).then(repository => {
+        exec(`cp -R ${path.resolve(home, 'garingtest', repository)} ${path.resolve(process.cwd())}`, false)
+        return inquirer.prompt([
+            {
+                name: 'projectName',
+                message: '项目的名称',
+                default: repository
+            }, {
+                name: 'projectVersion',
+                message: '项目的版本号',
+                default: '1.0.0'
+            }, {
+                name: 'projectDescription',
+                message: '项目的简介',
+                default: `A project named ${repository}`
+            }
+        ])
+    }).then(answers => {
+        return generator(answers, path.resolve(process.cwd(), repository))
+    }).then(() => {}).catch(err => {})
 })

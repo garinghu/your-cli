@@ -4,6 +4,7 @@ const inquirer = require('inquirer');
 const fs = require('fs');
 const path = require('path');
 const home = require('user-home');
+const download = require('download-git-repo');
 require('shelljs/global');
 
 const promptList = [{
@@ -17,13 +18,38 @@ const promptList = [{
 }];
 inquirer.prompt(promptList).then(answers => {
     const { address, alias } = answers;
+    go(address, alias)
+})
+
+function go(address, alias) {
     fs.stat(path.resolve(home, 'garingtest'), (err, stats) => {
         if(err) {
             cd(path.resolve(home));
             mkdir('garingtest');
         } else {
-            cd(path.resolve(home, 'garingtest'));
-            exec(`git clone ${address} ${alias}`);
+            download(`direct:${address}#master`, path.resolve(home, 'garingtest', alias), { clone: true }, (err) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    var file = path.join(home, 'garingtest', alias, '/package.json');
+                    fs.exists(file, exists => {
+                        if(exists) {
+                            fs.readFile(file, 'utf8', (err, data) => {
+                                var data = data.toString();
+                                var task = JSON.parse(data);
+                                task.name = "{{projectName}}";
+                                task.version = "{{projectVersion}}";
+                                task.description = "{{projectDescription}}",
+                                fs.writeFile(file, JSON.stringify(task, null, 2), 'utf8', err => {
+                                    err && console.log(err);
+                                })
+                            })
+                        } else {
+                            console.log('该项目不存在package.json文件，将不进行模版化处理')
+                        }
+                    })
+                }
+            })
         }
     })
-})
+}
